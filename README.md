@@ -17,6 +17,7 @@ I felt like adding a bit more to it, therefore this add-on library was created.
 - `github.com/adnsv/go-exp/maps` package 
   - flattening maps into slices of key-value pairs
   - sorting key-value pairs by key and by value
+  - merging maps with conflict resolution
   - one-liner `range for` loops for key or value ordered iterating over existing maps
 
 - `github.com/adnsv/go-exp/sets` package
