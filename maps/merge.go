@@ -21,7 +21,7 @@ func Merge[M1 ~map[K]V, M2 ~map[K]V, K comparable, V comparable](dst M1, src M2)
 			conflicts[k] = v
 		}
 	}
-	return conflicts
+	return
 }
 
 // MergeFunc provides the same functionality as Merge, but uses the allow
@@ -36,5 +36,51 @@ func MergeFunc[M1 ~map[K]V, M2 ~map[K]V, K comparable, V any](dst M1, src M2, al
 			conflicts[k] = v
 		}
 	}
-	return conflicts
+	return
+}
+
+// CalcMerge calculates statistics for merging src into dst.
+//
+//   - Data in both dst ad src remains unchanged
+//   - Statistics is returned as sets of keys `map[K]struct{}`
+//   - Keys in src that are not in dst are returned in the `create` set
+//   - Keys/value pairs that are equal in both src and dst are returned in the `overwrite` set
+//   - Keys that have different values in src and dst are returned in the `conflicts` set
+//
+func CalcMerge[M1 ~map[K]V, M2 ~map[K]V, K comparable, V comparable](dst M1, src M2) (create, overwrite, conflicts map[K]struct{}) {
+	create = map[K]struct{}{}
+	overwrite = map[K]struct{}{}
+	conflicts = map[K]struct{}{}
+	for k, v := range src {
+		prev_v, exists := dst[k]
+		if !exists {
+			create[k] = struct{}{}
+		} else if prev_v == v {
+			overwrite[k] = struct{}{}
+		} else {
+			conflicts[k] = struct{}{}
+		}
+	}
+	return
+}
+
+// CalcMergeFunc provides the same functionality as CalcMerge, but uses the
+// allow functor to determine if a value can be overwritten. Notice also, that
+// both dst and src maps in CalcMergeFunc are allowed to have different value
+// types, which can help in merging heterogeneous data.
+func CalcMergeFunc[M1 ~map[K]V1, M2 ~map[K]V2, K comparable, V1, V2 any](dst M1, src M2, allow func(dstval V1, srcval V2) bool) (create, overwrite, conflicts map[K]struct{}) {
+	create = map[K]struct{}{}
+	overwrite = map[K]struct{}{}
+	conflicts = map[K]struct{}{}
+	for k, v := range src {
+		prev_v, exists := dst[k]
+		if !exists {
+			create[k] = struct{}{}
+		} else if allow(prev_v, v) {
+			overwrite[k] = struct{}{}
+		} else {
+			conflicts[k] = struct{}{}
+		}
+	}
+	return
 }
