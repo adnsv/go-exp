@@ -152,7 +152,7 @@ func Intersect[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src
 }
 
 // Keys returns the keys from s as a slice. The keys will be in an
-// indeterminate order
+// indeterminate order.
 func Keys[S ~map[K]struct{}, K comparable](s S) []K {
 	r := make([]K, 0, len(s))
 	for k := range s {

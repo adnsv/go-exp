@@ -11,48 +11,8 @@ type Pair[K any, V any] struct {
 	Val V
 }
 
-func lessByKey[K constraints.Ordered, V any](a, b *Pair[K, V]) bool {
-	return a.Key < b.Key
-}
-
-func lessByVal[K any, V constraints.Ordered](a, b *Pair[K, V]) bool {
-	return a.Val < b.Val
-}
-
-func lessByKeyFunc[K any, V any](less func(a, b K) bool) func(a, b *Pair[K, V]) bool {
-	return func(a, b *Pair[K, V]) bool {
-		return less(a.Key, b.Key)
-	}
-}
-
-func lessByValFunc[K any, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
-	return func(a, b *Pair[K, V]) bool {
-		return less(a.Val, b.Val)
-	}
-}
-
-func lessByValKey[K constraints.Ordered, V constraints.Ordered](a, b *Pair[K, V]) bool {
-	if a.Val < b.Val {
-		return true
-	} else if b.Val < a.Val {
-		return false
-	} else {
-		return a.Key < b.Key
-	}
-}
-func lessByValKeyFunc[K constraints.Ordered, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
-	return func(a, b *Pair[K, V]) bool {
-		if less(a.Val, b.Val) {
-			return true
-		} else if less(b.Val, a.Val) {
-			return false
-		} else {
-			return a.Key < b.Key
-		}
-	}
-}
-
-// Pairs returns a slice of key-value pairs constructed from m.
+// Pairs returns a slice of key-value pairs constructed from m. The pairs will
+// be in an indeterminate order.
 func Pairs[M ~map[K]V, K comparable, V any](m M) []*Pair[K, V] {
 	pairs := make([]*Pair[K, V], 0, len(m))
 
@@ -139,5 +99,48 @@ func Insert[M ~map[K]V, K comparable, V any](m M, pairs ...*Pair[K, V]) {
 func InsertOrOverwrite[M ~map[K]V, K comparable, V any](m M, pairs ...*Pair[K, V]) {
 	for _, p := range pairs {
 		m[p.Key] = p.Val
+	}
+}
+
+// sorting callbacks, used internally
+
+func lessByKey[K constraints.Ordered, V any](a, b *Pair[K, V]) bool {
+	return a.Key < b.Key
+}
+
+func lessByVal[K any, V constraints.Ordered](a, b *Pair[K, V]) bool {
+	return a.Val < b.Val
+}
+
+func lessByKeyFunc[K any, V any](less func(a, b K) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
+		return less(a.Key, b.Key)
+	}
+}
+
+func lessByValFunc[K any, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
+		return less(a.Val, b.Val)
+	}
+}
+
+func lessByValKey[K constraints.Ordered, V constraints.Ordered](a, b *Pair[K, V]) bool {
+	if a.Val < b.Val {
+		return true
+	} else if b.Val < a.Val {
+		return false
+	} else {
+		return a.Key < b.Key
+	}
+}
+func lessByValKeyFunc[K constraints.Ordered, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
+		if less(a.Val, b.Val) {
+			return true
+		} else if less(b.Val, a.Val) {
+			return false
+		} else {
+			return a.Key < b.Key
+		}
 	}
 }
