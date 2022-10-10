@@ -14,7 +14,7 @@ func set[E comparable](ee ...E) map[E]struct{} {
 }
 
 func to_string[E comparable](s map[E]struct{}) string {
-	return fmt.Sprintf("%v", Elements(s))
+	return fmt.Sprintf("%v", Keys(s))
 }
 
 var empty = set[int]()

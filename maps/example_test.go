@@ -3,6 +3,8 @@ package maps
 import (
 	"fmt"
 	"strings"
+
+	"github.com/adnsv/go-exp/sets"
 )
 
 func ExampleInsert() {
@@ -176,9 +178,9 @@ func ExampleInverted() {
 		fmt.Printf("%d: %s\n", p.Key, p.Val)
 	}
 	fmt.Printf("\nDUPLICATES\n")
-	for _, v := range Sorted(duplicates) {
+	for v := range duplicates {
 		matching_keys := MatchValue(m, v)
-		as_slice := Sorted(matching_keys)
+		as_slice := sets.Sorted(matching_keys)
 		fmt.Printf("%d: %s\n", v, strings.Join(as_slice, ", "))
 	}
 	// Output:

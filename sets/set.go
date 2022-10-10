@@ -1,14 +1,20 @@
 package sets
 
-// set is effectively a map[K comparable]struct{}
+import (
+	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
+)
 
-// Contains checks if there is an element in the set.
+// Sets contain unique elements (keys). Effectively sets are implemented as
+// key-only maps of empty structs: set[K] = map[K]struct{}
+
+// Contains checks if there is a key in the set.
 func Contains[S ~map[K]struct{}, K comparable](s S, k K) bool {
 	_, ok := s[k]
 	return ok
 }
 
-// Contains checks if any of the elements is in the set.
+// Contains checks if any of the keys is in the set.
 func ContainsAny[S ~map[K]struct{}, K comparable](s S, keys ...K) bool {
 	for _, k := range keys {
 		_, ok := s[k]
@@ -19,7 +25,7 @@ func ContainsAny[S ~map[K]struct{}, K comparable](s S, keys ...K) bool {
 	return false
 }
 
-// Contains checks if all the elements are in the set.
+// Contains checks if all the keys are in the set.
 func ContainsAll[S ~map[K]struct{}, K comparable](s S, keys ...K) bool {
 	for _, k := range keys {
 		_, ok := s[k]
@@ -30,7 +36,7 @@ func ContainsAll[S ~map[K]struct{}, K comparable](s S, keys ...K) bool {
 	return true
 }
 
-// Equal reports whether two sets contain the same elements.
+// Equal reports whether two sets contain the same keys.
 func Equal[S1, S2 ~map[K]struct{}, K comparable](s1 S1, s2 S2) bool {
 	if len(s1) != len(s2) {
 		return false
@@ -43,7 +49,7 @@ func Equal[S1, S2 ~map[K]struct{}, K comparable](s1 S1, s2 S2) bool {
 	return true
 }
 
-// Clear removes all elements from s.
+// Clear removes all keys from s.
 func Clear[S ~map[K]struct{}, K comparable](s S) {
 	for k := range s {
 		delete(s, k)
@@ -59,30 +65,21 @@ func Clone[S ~map[K]struct{}, K comparable](s S) S {
 	return r
 }
 
-// Elements returns the elements of the set s.
-func Elements[S ~map[K]struct{}, K comparable](s S) []K {
-	r := make([]K, 0, len(s))
-	for k := range s {
-		r = append(r, k)
-	}
-	return r
-}
-
-// Insert inserts the elements info the set.
+// Insert inserts the keys info s.
 func Insert[S ~map[K]struct{}, K comparable](s S, keys ...K) {
 	for _, k := range keys {
 		s[k] = struct{}{}
 	}
 }
 
-// Remove removes the elements from the set.
+// Remove removes the keys from s.
 func Remove[S ~map[K]struct{}, K comparable](s S, keys ...K) {
 	for _, k := range keys {
 		delete(s, k)
 	}
 }
 
-// Union combines elements from s1 and s2 into one set.
+// Union combines keys from s1 and s2 into one set.
 // Returns s1 ∪ s2.
 func Union[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	r := Clone(s1)
@@ -92,7 +89,7 @@ func Union[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	return r
 }
 
-// Merge inserts the src elements into the dst.
+// Merge inserts keys from src into the dst.
 // Effectively, dst = dst ∪ src.
 func Merge[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src S2) {
 	for k := range src {
@@ -100,7 +97,7 @@ func Merge[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src S2)
 	}
 }
 
-// Difference returns the elements from s1 that are not contained in s2.
+// Difference returns the keys from s1 that are not contained in s2.
 // Returns s1 - s2.
 func Difference[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	r := S{}
@@ -112,7 +109,7 @@ func Difference[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	return r
 }
 
-// Subtract removes the src elements from the dst.
+// Subtract removes the src keys from the dst.
 // Effectively, this is a difference (subtraction) operation: dst = dst - src.
 func Subtract[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src S2) {
 	for k := range src {
@@ -120,7 +117,7 @@ func Subtract[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src 
 	}
 }
 
-// Intersection returns elements that exist in both s1 and s2.
+// Intersection returns keys that exist in both s1 and s2.
 // Effectively: s1 ∩ s2
 func Intersection[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	n := len(s1)
@@ -140,7 +137,7 @@ func Intersection[S map[K]struct{}, K comparable](s1 S, s2 S) S {
 	return r
 }
 
-// Intersect removes elements from dst that are not contained in src.
+// Intersect removes keys from dst that are not contained in src.
 // Effectively, dst = dst ∩ src
 func Intersect[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src S2) {
 	if len(src) == 0 {
@@ -152,4 +149,21 @@ func Intersect[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src
 	for k := range Difference(map[K]struct{}(dst), map[K]struct{}(src)) {
 		Remove(dst, k)
 	}
+}
+
+// Keys returns the keys from s as a slice. The keys will be in an
+// indeterminate order
+func Keys[S ~map[K]struct{}, K comparable](s S) []K {
+	r := make([]K, 0, len(s))
+	for k := range s {
+		r = append(r, k)
+	}
+	return r
+}
+
+// Sorted returns the keys from s as a sorted slice.
+func Sorted[S ~map[K]struct{}, K constraints.Ordered](s S) []K {
+	r := Keys(s)
+	slices.Sort(r)
+	return r
 }
