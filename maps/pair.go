@@ -122,3 +122,22 @@ func StableSortedByValFunc[M ~map[K]V, K constraints.Ordered, V any](m M, less f
 	slices.SortFunc(ret, lessByValKeyFunc[K](less))
 	return ret
 }
+
+// Insert copies key-value pairs into m, if the map doesn't already contain an
+// elements with equivalent keys.
+func Insert[M ~map[K]V, K comparable, V any](m M, pairs ...*Pair[K, V]) {
+	for _, p := range pairs {
+		_, exists := m[p.Key]
+		if !exists {
+			m[p.Key] = p.Val
+		}
+	}
+}
+
+// InsertOrOverwrite copies key-value pairs into m, overwriting existing
+// elements with equivalent keys.
+func InsertOrOverwrite[M ~map[K]V, K comparable, V any](m M, pairs ...*Pair[K, V]) {
+	for _, p := range pairs {
+		m[p.Key] = p.Val
+	}
+}

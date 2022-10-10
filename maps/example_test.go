@@ -5,6 +5,66 @@ import (
 	"strings"
 )
 
+func ExampleInsert() {
+	m := map[int]string{
+		1: "one",
+		2: "two",
+		3: "three",
+		6: "six",
+	}
+
+	type pair = Pair[int, string]
+	Insert(m, &pair{3, "THREE"}, &pair{4, "FOUR"})
+
+	m2 := map[int]string{
+		1: "UNO",
+		2: "DOS",
+		3: "TRES",
+		5: "CINCO",
+	}
+	Insert(m, Pairs(m2)...)
+	for _, p := range SortedByKey(m) {
+		fmt.Printf("%d: %s\n", p.Key, p.Val)
+	}
+	// Output:
+	// 1: one
+	// 2: two
+	// 3: three
+	// 4: FOUR
+	// 5: CINCO
+	// 6: six
+}
+
+func ExampleInsertOrOverwrite() {
+	m := map[int]string{
+		1: "one",
+		2: "two",
+		3: "three",
+		6: "six",
+	}
+
+	type pair = Pair[int, string]
+	InsertOrOverwrite(m, &pair{3, "THREE"}, &pair{4, "FOUR"})
+
+	m2 := map[int]string{
+		1: "UNO",
+		2: "DOS",
+		3: "TRES",
+		5: "CINCO",
+	}
+	InsertOrOverwrite(m, Pairs(m2)...)
+	for _, p := range SortedByKey(m) {
+		fmt.Printf("%d: %s\n", p.Key, p.Val)
+	}
+	// Output:
+	// 1: UNO
+	// 2: DOS
+	// 3: TRES
+	// 4: FOUR
+	// 5: CINCO
+	// 6: six
+}
+
 func ExampleSortedByKey() {
 	m := map[int]string{
 		1: "one",
