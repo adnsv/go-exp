@@ -11,32 +11,45 @@ type Pair[K any, V any] struct {
 	Val V
 }
 
-// SortStableByKey stable sorts key-value pairs by key.
-func SortStableByKey[K constraints.Ordered, V any](pairs []*Pair[K, V]) {
-	slices.SortStableFunc(pairs, func(a, b *Pair[K, V]) bool {
-		return a.Key < b.Key
-	})
+func lessByKey[K constraints.Ordered, V any](a, b *Pair[K, V]) bool {
+	return a.Key < b.Key
 }
 
-// SortStableByKey stable sorts key-value pairs by key as determined by the less function.
-func SortStableByKeyFunc[K any, V any](pairs []*Pair[K, V], less func(a, b K) bool) {
-	slices.SortStableFunc(pairs, func(a, b *Pair[K, V]) bool {
+func lessByVal[K any, V constraints.Ordered](a, b *Pair[K, V]) bool {
+	return a.Val < b.Val
+}
+
+func lessByKeyFunc[K any, V any](less func(a, b K) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
 		return less(a.Key, b.Key)
-	})
+	}
 }
 
-// SortStableByKey stable sorts key-value pairs by value.
-func SortStableByVal[K comparable, V constraints.Ordered](pairs []*Pair[K, V]) {
-	slices.SortStableFunc(pairs, func(a, b *Pair[K, V]) bool {
-		return a.Val < b.Val
-	})
-}
-
-// SortStableByKey stable sorts key-value pairs by value as determined by the less function.
-func SortStableByValFunc[K comparable, V any](pairs []*Pair[K, V], less func(a, b V) bool) {
-	slices.SortStableFunc(pairs, func(a, b *Pair[K, V]) bool {
+func lessByValFunc[K any, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
 		return less(a.Val, b.Val)
-	})
+	}
+}
+
+func lessByValKey[K constraints.Ordered, V constraints.Ordered](a, b *Pair[K, V]) bool {
+	if a.Val < b.Val {
+		return true
+	} else if b.Val < a.Val {
+		return false
+	} else {
+		return a.Key < b.Key
+	}
+}
+func lessByValKeyFunc[K constraints.Ordered, V any](less func(a, b V) bool) func(a, b *Pair[K, V]) bool {
+	return func(a, b *Pair[K, V]) bool {
+		if less(a.Val, b.Val) {
+			return true
+		} else if less(b.Val, a.Val) {
+			return false
+		} else {
+			return a.Key < b.Key
+		}
+	}
 }
 
 // Pairs returns a slice of key-value pairs constructed from m.
@@ -50,34 +63,62 @@ func Pairs[M ~map[K]V, K comparable, V any](m M) []*Pair[K, V] {
 	return pairs
 }
 
-// StableSortedByKey returns a slice of key-value pairs constructed from m and
-// stable-sorted by key.
-func StableSortedByKey[M ~map[K]V, K constraints.Ordered, V any](m M) []*Pair[K, V] {
+// SortedFunc returns a slice of key-value pairs constructed from m and sorted
+// as determined by the less function. The sort is stable if the less function
+// produces stable results.
+func SortedFunc[M ~map[K]V, K comparable, V any](m M, less func(a, b *Pair[K, V]) bool) []*Pair[K, V] {
 	ret := Pairs(m)
-	SortStableByKey(ret)
+	slices.SortFunc(ret, less)
 	return ret
 }
 
-// StableSortedByKeyFunc returns a slice of key-value pairs constructed from m and
-// stable-sorted by key as determined by the less function.
-func StableSortedByKeyFunc[M ~map[K]V, K comparable, V any](m M, less func(a, b K) bool) []*Pair[K, V] {
-	pairs := Pairs(m)
-	SortStableByKeyFunc(pairs, less)
-	return pairs
+// SortedByKey returns a slice of key-value pairs constructed from m and sorted
+// by key. This sort is guaranteed to be stable because the keys are unique.
+func SortedByKey[M ~map[K]V, K constraints.Ordered, V any](m M) []*Pair[K, V] {
+	return SortedFunc(m, lessByKey[K, V])
+}
+
+// SortedByKeyFunc returns a slice of key-value pairs constructed from m and
+// sorted by key as determined by the less function. This sort is stable
+// provided the less function produces stable results.
+func SortedByKeyFunc[M ~map[K]V, K comparable, V any](m M, less func(a, b K) bool) []*Pair[K, V] {
+	return SortedFunc(m, lessByKeyFunc[K, V](less))
+}
+
+// SortedByVal returns a slice of key-value pairs constructed from m and sorted
+// by value. This sort is stable only if there is no duplicates (all values are
+// unique).
+func SortedByVal[M ~map[K]V, K comparable, V constraints.Ordered](m M) []*Pair[K, V] {
+	ret := Pairs(m)
+	slices.SortFunc(ret, lessByVal[K, V])
+	return ret
+}
+
+// SortedByValFunc returns a slice of key-value pairs constructed from m and
+// sorted by value as determined by the less function. This sort is stable
+// provided there is no duplicates (all values are unique) and the less function
+// produces stable results.
+func SortedByValFunc[M ~map[K]V, K comparable, V any](m M, less func(a, b V) bool) []*Pair[K, V] {
+	ret := Pairs(m)
+	slices.SortFunc(ret, lessByValFunc[K](less))
+	return ret
 }
 
 // StableSortedByVal returns a slice of key-value pairs constructed from m and
-// stable-sorted by value.
+// sorted by value. For duplicate values, sorting falls back to comparing keys.
+// This sort is guaranteed to be stable.
 func StableSortedByVal[M ~map[K]V, K constraints.Ordered, V constraints.Ordered](m M) []*Pair[K, V] {
 	ret := Pairs(m)
-	SortStableByVal(ret)
+	slices.SortFunc(ret, lessByValKey[K, V])
 	return ret
 }
 
-// StableSortedByValFunc returns a slice of key-value pairs constructed from m and
-// stable-sorted by value as determined by the less function.
+// SortedByValFunc returns a slice of key-value pairs constructed from m and
+// sorted by value as determined by the less function. For duplicate values,
+// sorting falls back to comparing keys. This sort is stable provided the less
+// function produces stable results.
 func StableSortedByValFunc[M ~map[K]V, K constraints.Ordered, V any](m M, less func(a, b V) bool) []*Pair[K, V] {
 	ret := Pairs(m)
-	SortStableByValFunc(ret, less)
+	slices.SortFunc(ret, lessByValKeyFunc[K](less))
 	return ret
 }
