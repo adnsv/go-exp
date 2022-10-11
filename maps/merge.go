@@ -41,7 +41,7 @@ func MergeFunc[M1 ~map[K]V, M2 ~map[K]V, K comparable, V any](dst M1, src M2, al
 
 // CalcMerge calculates statistics for merging src into dst.
 //
-//   - Data in both dst ad src remains unchanged
+//   - Data in both dst and src remains unchanged
 //   - Statistics is returned as sets of keys `map[K]struct{}`
 //   - Keys in src that are not in dst are returned in the `create` set
 //   - Keys/value pairs that are equal in both src and dst are returned in the `overwrite` set
