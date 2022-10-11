@@ -81,7 +81,7 @@ func Remove[S ~map[K]struct{}, K comparable](s S, keys ...K) {
 
 // Union combines keys from s1 and s2 into one set.
 // Returns s1 ∪ s2.
-func Union[S map[K]struct{}, K comparable](s1 S, s2 S) S {
+func Union[S ~map[K]struct{}, K comparable](s1 S, s2 S) S {
 	r := Clone(s1)
 	for k := range s2 {
 		r[k] = struct{}{}
@@ -99,7 +99,7 @@ func Merge[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src S2)
 
 // Difference returns the keys from s1 that are not contained in s2.
 // Returns s1 - s2.
-func Difference[S map[K]struct{}, K comparable](s1 S, s2 S) S {
+func Difference[S ~map[K]struct{}, K comparable](s1 S, s2 S) S {
 	r := S{}
 	for k := range s1 {
 		if _, ok := s2[k]; !ok {
@@ -119,7 +119,7 @@ func Subtract[S1 ~map[K]struct{}, S2 ~map[K]struct{}, K comparable](dst S1, src 
 
 // Intersection returns keys that exist in both s1 and s2.
 // Effectively: s1 ∩ s2
-func Intersection[S map[K]struct{}, K comparable](s1 S, s2 S) S {
+func Intersection[S ~map[K]struct{}, K comparable](s1 S, s2 S) S {
 	n := len(s1)
 	n2 := len(s2)
 	if n == 0 || n2 == 0 {
