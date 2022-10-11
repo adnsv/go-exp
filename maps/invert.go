@@ -20,8 +20,6 @@ func HasDuplicates[M ~map[K]V, K comparable, V comparable](m M) bool {
 // Inverted produces inverted map from m. Entries that can not be inverted are
 // returned as a set of duplicates, they are excluded from the inverted result:
 //
-//   len(m) = len(inverted) + len(duplicates)
-//
 // A strategy for resolving the issues with duplicates then may include
 // iterating over the returned set of duplicates, possibly calling the
 // MatchValue function to discover which keys are associated to each duplicate
