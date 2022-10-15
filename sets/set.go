@@ -1,10 +1,5 @@
 package sets
 
-import (
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
-)
-
 // Sets contain unique elements (keys). Effectively sets are implemented as
 // key-only maps of empty structs: set[K] = map[K]struct{}
 
@@ -158,12 +153,5 @@ func Keys[S ~map[K]struct{}, K comparable](s S) []K {
 	for k := range s {
 		r = append(r, k)
 	}
-	return r
-}
-
-// Sorted returns the keys from s as a sorted slice.
-func Sorted[S ~map[K]struct{}, K constraints.Ordered](s S) []K {
-	r := Keys(s)
-	slices.Sort(r)
 	return r
 }
