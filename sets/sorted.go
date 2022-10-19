@@ -16,7 +16,7 @@ func Sorted[S ~map[K]struct{}, K constraints.Ordered](s S) []K {
 // Sorted returns the keys from s as a sorted slice as determined by the less
 // function. This sort is stable provided the less function produces stable
 // results.
-func SortedFunc[S ~map[K]struct{}, K constraints.Ordered](s S, less func(a, b K) bool) []K {
+func SortedFunc[S ~map[K]struct{}, K comparable](s S, less func(a, b K) bool) []K {
 	r := Keys(s)
 	slices.SortFunc(r, less)
 	return r
