@@ -21,7 +21,7 @@ func Sliced[M ~map[K]V, S ~map[K]struct{}, K comparable, V any](m M, s S) M {
 }
 
 // Equal reports whether two maps contain the same keys.
-func EqualKeys[M1 ~map[K]any, M2 ~map[K]any, K comparable](m1 M1, m2 M2) bool {
+func EqualKeys[M1 ~map[K]V1, M2 ~map[K]V2, K comparable, V1 any, V2 any](m1 M1, m2 M2) bool {
 	if len(m1) != len(m2) {
 		return false
 	}
